@@ -18,7 +18,7 @@ long previousMillis = 0;                // last time sensor was recorded
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
 EthernetClient client;
-IPAddress server(192, 168, 1, 124);
+char server[] = "krimthered.ddns.net";
 IPAddress ip(192, 168, 1, 130);
 IPAddress myDns(8, 8, 8, 8);
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -94,7 +94,7 @@ void loop() {
 //    }
 
     // if you get a connection, report back via serial:
-    if (client.connect(server, 3000))
+    if (client.connect(server, 80))
     {
       String postData = "temp=" + String(t) + "&humidity=" + String(h);
       Serial.println("post");
