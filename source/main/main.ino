@@ -5,14 +5,13 @@
 //#include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-// #include <SD.h>
 #include "Adafruit_SHT31.h"
 #include <Ethernet.h>
 
 const int pirPin = 8;                   // the input pin for PIR sensor
 const int relayPin = 9;                 // connect the relay to this pin
 int motionSensorInput = 0;              // variable for reading the pin status
-long environmentInterval = 1 * 5000;   // minutes between environment readings
+long environmentInterval = 15 * 60000;   // minutes between environment readings
 long previousMillis = 0;                // last time sensor was recorded
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
@@ -28,20 +27,13 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
  */
 void setup() {
   Ethernet.init(10);
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-
-  Serial.println("Configuring board and sensors");
     
   pinMode(pirPin, INPUT);       // declare sensor as input
   pinMode(relayPin, OUTPUT);    // declare relay as output
 
   // make sure the temp/humid sensor is there
   if (!sht31.begin(0x44))
-  {  
-    Serial.println("SHT31 not configured");
+  {
     while (1);
   }
 
@@ -55,15 +47,6 @@ void setup() {
   
   // give the Ethernet shield a second to initialize:
   delay(3000);
-
-  // see if the card is present and can be initialized:
-//  if (!SD.begin(4)) {
-//    while (1);
-//  }
-
-  Serial.print("My IP is ");
-  Serial.println(Ethernet.localIP());
-  Serial.println("Setup complete");  
 }
 
 /*
@@ -84,20 +67,10 @@ void loop() {
     float t = sht31.readTemperature();
     float h = sht31.readHumidity();
 
-    // open the file. note that only one file can be open at a time,
-    // so you have to close this one before opening another.
-//    File dataFile = SD.open("datalog.txt", FILE_WRITE);// if the file is available, write to it:
-//    if (dataFile)
-//    {
-//      dataFile.println(dataString);
-//      dataFile.close();
-//    }
-
     // if you get a connection, report back via serial:
     if (client.connect(server, 80))
     {
       String postData = "temp=" + String(t) + "&humidity=" + String(h);
-      Serial.println("post");
       client.println("POST /beerroom/environment HTTP/1.1");
       client.println("User-Agent: arduino-ethernet");
       client.println("Host: 192.168.1.115:3000");
@@ -108,10 +81,9 @@ void loop() {
       client.println();
       client.print(postData);
     } else {
-      Serial.println("connection failed");
+      //can't really do much if we didn't connect
     }
     if (!client.connected()) {
-      Serial.println("disconnecting.");
       client.stop();
     }
   }
