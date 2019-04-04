@@ -2,7 +2,7 @@
  * @author: ndykstra
  * @date: 3/25/2019
  */
-//#include <Arduino.h>
+ 
 #include <Wire.h>
 #include <SPI.h>
 #include "Adafruit_SHT31.h"
@@ -27,6 +27,8 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
  */
 void setup() {
   Ethernet.init(10);
+
+  delay(3000);
     
   pinMode(pirPin, INPUT);       // declare sensor as input
   pinMode(relayPin, OUTPUT);    // declare relay as output
@@ -36,8 +38,6 @@ void setup() {
   {
     while (1);
   }
-
-  Serial.println("SHT31 configured");
 
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
@@ -61,7 +61,7 @@ void loop() {
 
   //only read environment sensors at set intervals
   unsigned long currentMillis = millis();
-  if(currentMillis - previousMillis > environmentInterval) 
+  if(currentMillis - previousMillis > environmentInterval || previousMillis == 0) 
   {
     previousMillis = currentMillis;    
     float t = sht31.readTemperature();
