@@ -14,6 +14,8 @@ const int relayPin = 9;                 // connect the relay to this pin
 int motionSensorInput = 0;              // variable for reading the pin status
 long environmentInterval = 15 * 60000;   // minutes between environment readings
 long previousMillis = 0;                // last time sensor was recorded
+long sensorInterval = 5 * 60000;        // minutes light should stay on after no movement
+long sensorMillis = 0;
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
@@ -26,7 +28,7 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 /*
    Perform configuration and hardware setup when the board powers on.
 */
-void setup() {  
+void setup() {
   Ethernet.init(10);
 
   delay(3000);
@@ -59,12 +61,23 @@ void loop() {
   
   //read the input from the motion sensor
   motionSensorInput = digitalRead(pirPin);
+
+  if (motionSensorInput > 0)
+  {
+    // turn on the lights if there is any motion
+    digitalWrite(relayPin, 1);
+
+    // reset timer
+    sensorMillis = currentMillis;
+  }
+  else if (currentMillis - sensorMillis > sensorInterval && motionSensorInput == 0)
+  {
+    // turn off the lights if there hasn't been recent movement
+    digitalWrite(relayPin, 0);
+  }
   
   if (currentMillis - previousMillis > environmentInterval || previousMillis == 0)
   {
-    //write the sensor output to the relay
-    digitalWrite(relayPin, motionSensorInput);
-
     previousMillis = currentMillis;
     float t = sht31.readTemperature();
     float h = sht31.readHumidity();
@@ -72,7 +85,6 @@ void loop() {
     // if you get a connection, report back via serial:
     if (client.connect(server, 80))
     {
-      Serial.println("connected to server");
       String postData = "temp=" + String(t) + "&humidity=" + String(h);
       client.println("POST /beerroom/environment/" + String(AUTHTOKEN) + " HTTP/1.1");
       client.println("User-Agent: arduino-ethernet");
