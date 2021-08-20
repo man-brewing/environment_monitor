@@ -56,11 +56,12 @@ void setup() {
 void loop() {
   //only read environment sensors at set intervals
   unsigned long currentMillis = millis();
+  
+  //read the input from the motion sensor
+  motionSensorInput = digitalRead(pirPin);
+  
   if (currentMillis - previousMillis > environmentInterval || previousMillis == 0)
   {
-    //read the input from the motion sensor
-    motionSensorInput = digitalRead(pirPin);
-
     //write the sensor output to the relay
     digitalWrite(relayPin, motionSensorInput);
 
