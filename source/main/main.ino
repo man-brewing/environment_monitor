@@ -3,6 +3,7 @@
    @date: 8/5/2021
 */
 
+#include "secrets.h"
 #include <Wire.h>
 #include <SPI.h>
 #include "Adafruit_SHT31.h"
@@ -72,7 +73,7 @@ void loop() {
     {
       Serial.println("connected to server");
       String postData = "temp=" + String(t) + "&humidity=" + String(h);
-      client.println("POST /beerroom/environment HTTP/1.1");
+      client.println("POST /beerroom/environment/" + String(AUTHTOKEN) + " HTTP/1.1");
       client.println("User-Agent: arduino-ethernet");
       client.println("Host: manbrewingapi.azurewebsites.net");
       client.println("Content-Type: application/x-www-form-urlencoded");
